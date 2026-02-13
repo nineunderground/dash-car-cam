@@ -1,0 +1,17 @@
+[Unit]
+Description=Dash Car Cam - Recording Service
+After=multi-user.target
+Wants=dashcam-cleanup.timer
+
+[Service]
+Type=simple
+User=pi
+EnvironmentFile=/etc/dashcam/dashcam.conf
+ExecStart=/usr/local/bin/dashcam-record.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

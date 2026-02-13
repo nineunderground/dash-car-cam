@@ -1,0 +1,10 @@
+[Unit]
+Description=Dash Car Cam - Storage Cleanup Timer
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

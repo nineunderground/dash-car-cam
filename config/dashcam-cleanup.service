@@ -1,0 +1,8 @@
+[Unit]
+Description=Dash Car Cam - Storage Cleanup
+
+[Service]
+Type=oneshot
+User=pi
+EnvironmentFile=/etc/dashcam/dashcam.conf
+ExecStart=/usr/local/bin/storage-cleanup.sh
