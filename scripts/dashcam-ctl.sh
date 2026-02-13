@@ -15,6 +15,7 @@ usage() {
     echo "  disk       Show storage usage"
     echo "  tail       Follow dashcam logs"
     echo "  ip         Show Pi's IP address"
+    echo "  profile    1080p|720p - Switch recording profile"
     echo "  config     Show current configuration"
 }
 
@@ -72,6 +73,25 @@ case "${1:-}" in
     ip)
         echo "IP: $(hostname -I | awk '{print $1}')"
         echo "RTSP: rtsp://$(hostname -I | awk '{print $1}'):${RTSP_PORT:-8554}/dashcam"
+        ;;
+    profile)
+        case "${2:-}" in
+            1080p)
+                sudo cp /etc/dashcam/dashcam-1080p.conf /etc/dashcam/dashcam.conf
+                sudo systemctl restart dashcam-record 2>/dev/null || true
+                echo "Switched to 1080p profile (~8h on 32GB). Recording restarted."
+                ;;
+            720p)
+                sudo cp /etc/dashcam/dashcam-720p.conf /etc/dashcam/dashcam.conf
+                sudo systemctl restart dashcam-record 2>/dev/null || true
+                echo "Switched to 720p profile (~16h on 32GB). Recording restarted."
+                ;;
+            *)
+                CURRENT=$(grep "^RESOLUTION=" /etc/dashcam/dashcam.conf 2>/dev/null | cut -d= -f2 | tr -d '"')
+                echo "Current: $CURRENT"
+                echo "Usage: dashcam-ctl profile 1080p|720p"
+                ;;
+        esac
         ;;
     config)
         cat /etc/dashcam/dashcam.conf

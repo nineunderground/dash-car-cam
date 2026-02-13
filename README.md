@@ -110,6 +110,21 @@ sudo dashcam-ctl record off
 sudo dashcam-ctl stream on
 ```
 
+### Switching Profiles
+
+```bash
+# Switch to 720p (more recording time)
+dashcam-ctl profile 720p
+
+# Switch to 1080p (better quality)
+dashcam-ctl profile 1080p
+
+# Check current profile
+dashcam-ctl profile
+```
+
+Both profiles are stored in `/etc/dashcam/` for easy switching.
+
 ## Useful Commands
 
 ```bash

@@ -116,13 +116,30 @@ sudo mkdir -p /etc/dashcam
 
 # Install config (preserve existing)
 if [ ! -f /etc/dashcam/dashcam.conf ]; then
-    sudo cp "$REPO_DIR/config/dashcam.conf" /etc/dashcam/dashcam.conf
-    # Adjust user-specific paths
+    echo ""
+    echo "  Select recording profile:"
+    echo "    1) 1080p — higher quality, ~8h on 32GB  (default)"
+    echo "    2) 720p  — lighter storage, ~16h on 32GB"
+    echo ""
+    read -rp "  Profile [1]: " PROFILE_CHOICE
+    PROFILE_CHOICE="${PROFILE_CHOICE:-1}"
+
+    case "$PROFILE_CHOICE" in
+        2) PROFILE_FILE="dashcam-720p.conf"; log "Using 720p profile" ;;
+        *) PROFILE_FILE="dashcam-1080p.conf"; log "Using 1080p profile" ;;
+    esac
+
+    sudo cp "$REPO_DIR/config/$PROFILE_FILE" /etc/dashcam/dashcam.conf
     sudo sed -i "s|/home/pi|/home/$PI_USER|g" /etc/dashcam/dashcam.conf
     log "Config installed: /etc/dashcam/dashcam.conf"
 else
     warn "Config already exists, skipping (edit /etc/dashcam/dashcam.conf manually)"
 fi
+
+# Copy both profiles for reference
+sudo cp "$REPO_DIR/config/dashcam-1080p.conf" /etc/dashcam/dashcam-1080p.conf
+sudo cp "$REPO_DIR/config/dashcam-720p.conf" /etc/dashcam/dashcam-720p.conf
+log "Both profiles available in /etc/dashcam/ for switching later"
 
 # -----------------------------------------------------------
 # 6. Install scripts
