@@ -150,6 +150,54 @@ Plug the SD card into any computer — recordings are in `/home/pi/recordings/`
 ### SMB share (optional)
 The setup script can optionally install Samba to expose recordings as a network drive.
 
+## OLED Status Display (optional)
+
+Supports I2C SSD1306 OLED displays (128×64). Shows real-time status on a small screen mounted alongside the camera.
+
+### Wiring
+
+| OLED Pin | Pi Pin |
+|----------|--------|
+| SDA | GPIO 2 (pin 3) |
+| SCL | GPIO 3 (pin 5) |
+| VCC | 3.3V (pin 1) |
+| GND | GND (pin 6) |
+
+### What It Shows
+
+```
+┌──────────────────────┐
+│ DASHCAM  ● REC       │
+│ 1920x1080  STREAM:OFF│
+│ DISK ████████░░░░░░  │
+│ 72% used  8.2G free  │
+│ 142 clips  up 3h 20m │
+│ IP: 192.168.1.42     │
+└──────────────────────┘
+```
+
+- Recording status (● REC / ○ IDLE)
+- Current resolution + streaming on/off
+- Disk usage bar + percentage
+- Clip count + system uptime
+- IP address (for RTSP connection)
+
+Refreshes every 3 seconds (configurable via `OLED_REFRESH_SECONDS`).
+
+### Control
+
+```bash
+dashcam-ctl oled on    # Enable display
+dashcam-ctl oled off   # Disable display
+```
+
+### Verify I2C Connection
+
+```bash
+sudo i2cdetect -y 1
+# Should show device at 0x3C (default)
+```
+
 ## LED Behavior
 
 | LED | Meaning |
@@ -195,10 +243,14 @@ journalctl -u dashcam-record -f
 │   ├── dashcam-stream.sh # RTSP streaming
 │   ├── dashcam-ctl.sh    # Control utility
 │   ├── storage-cleanup.sh# Auto-purge old files
-│   └── led-status.sh     # Optional LED control
+│   ├── led-status.sh     # Optional LED control
+│   └── oled-status.py    # Optional OLED display
 ├── config/
 │   ├── dashcam.conf      # Default configuration
+│   ├── dashcam-1080p.conf# 1080p profile
+│   ├── dashcam-720p.conf # 720p profile
 │   ├── dashcam-record.service
+│   ├── dashcam-oled.service
 │   ├── dashcam-stream.service
 │   └── dashcam-cleanup.timer
 └── README.md

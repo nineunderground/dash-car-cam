@@ -16,6 +16,7 @@ usage() {
     echo "  tail       Follow dashcam logs"
     echo "  ip         Show Pi's IP address"
     echo "  profile    1080p|720p - Switch recording profile"
+    echo "  oled       on|off - Toggle OLED display"
     echo "  config     Show current configuration"
 }
 
@@ -26,6 +27,8 @@ case "${1:-}" in
         systemctl is-active dashcam-record 2>/dev/null || echo "inactive"
         echo -n "Streaming: "
         systemctl is-active dashcam-stream 2>/dev/null || echo "inactive"
+        echo -n "OLED:      "
+        systemctl is-active dashcam-oled 2>/dev/null || echo "inactive"
         echo ""
         echo "Recordings: $(find "$RECORD_DIR" -name '*.mp4' 2>/dev/null | wc -l) files"
         echo "Disk: $(df -h "$RECORD_DIR" | tail -1 | awk '{print $5 " used (" $4 " free)"}')"
@@ -90,6 +93,23 @@ case "${1:-}" in
                 CURRENT=$(grep "^RESOLUTION=" /etc/dashcam/dashcam.conf 2>/dev/null | cut -d= -f2 | tr -d '"')
                 echo "Current: $CURRENT"
                 echo "Usage: dashcam-ctl profile 1080p|720p"
+                ;;
+        esac
+        ;;
+    oled)
+        case "${2:-}" in
+            on)
+                sudo systemctl enable --now dashcam-oled
+                echo "OLED display enabled"
+                ;;
+            off)
+                sudo systemctl disable --now dashcam-oled
+                echo "OLED display disabled"
+                ;;
+            *)
+                echo -n "OLED: "
+                systemctl is-active dashcam-oled 2>/dev/null || echo "inactive"
+                echo "Usage: dashcam-ctl oled on|off"
                 ;;
         esac
         ;;

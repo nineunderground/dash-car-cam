@@ -142,11 +142,37 @@ sudo cp "$REPO_DIR/config/dashcam-720p.conf" /etc/dashcam/dashcam-720p.conf
 log "Both profiles available in /etc/dashcam/ for switching later"
 
 # -----------------------------------------------------------
+# 5b. Optional: OLED display setup
+# -----------------------------------------------------------
+echo ""
+read -rp "  Install OLED display support (I2C SSD1306)? [y/N] " OLED_CHOICE
+if [[ "$OLED_CHOICE" =~ ^[Yy]$ ]]; then
+    log "Installing OLED dependencies..."
+    sudo apt-get install -y -qq python3-pip python3-pil i2c-tools
+    pip3 install --break-system-packages adafruit-circuitpython-ssd1306 2>/dev/null || \
+        pip3 install adafruit-circuitpython-ssd1306
+
+    # Enable I2C
+    if ! grep -q "^dtparam=i2c_arm=on" "$BOOT_CONFIG" 2>/dev/null; then
+        echo "dtparam=i2c_arm=on" | sudo tee -a "$BOOT_CONFIG" > /dev/null
+        log "Enabled I2C in boot config"
+    fi
+
+    # Enable OLED in config
+    sudo sed -i 's/OLED_ENABLED=false/OLED_ENABLED=true/' /etc/dashcam/dashcam.conf
+
+    OLED_INSTALLED=true
+    log "OLED display support installed"
+else
+    OLED_INSTALLED=false
+fi
+
+# -----------------------------------------------------------
 # 6. Install scripts
 # -----------------------------------------------------------
 log "Installing scripts..."
 
-for script in dashcam-record.sh dashcam-stream.sh dashcam-ctl.sh storage-cleanup.sh led-status.sh; do
+for script in dashcam-record.sh dashcam-stream.sh dashcam-ctl.sh storage-cleanup.sh led-status.sh oled-status.py; do
     sudo cp "$REPO_DIR/scripts/$script" "/usr/local/bin/$script"
     sudo chmod +x "/usr/local/bin/$script"
 done
@@ -162,7 +188,7 @@ sudo sed -i "s|/home/pi|/home/$PI_USER|g" /usr/local/bin/dashcam-*.sh /usr/local
 # -----------------------------------------------------------
 log "Installing systemd services..."
 
-for unit in dashcam-record.service dashcam-stream.service dashcam-cleanup.service dashcam-cleanup.timer; do
+for unit in dashcam-record.service dashcam-stream.service dashcam-cleanup.service dashcam-cleanup.timer dashcam-oled.service; do
     sudo cp "$REPO_DIR/config/$unit" "/etc/systemd/system/$unit"
     # Adjust user
     sudo sed -i "s/User=pi/User=$PI_USER/" "/etc/systemd/system/$unit"
@@ -176,6 +202,14 @@ sudo systemctl enable dashcam-cleanup.timer
 
 # Streaming is disabled by default
 sudo systemctl disable dashcam-stream.service 2>/dev/null || true
+
+# OLED display (if installed)
+if [ "${OLED_INSTALLED:-false}" = "true" ]; then
+    sudo systemctl enable dashcam-oled.service
+    log "OLED display service enabled"
+else
+    sudo systemctl disable dashcam-oled.service 2>/dev/null || true
+fi
 
 log "Services installed"
 

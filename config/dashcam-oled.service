@@ -1,0 +1,16 @@
+[Unit]
+Description=Dash Car Cam - OLED Status Display
+After=multi-user.target dashcam-record.service
+
+[Service]
+Type=simple
+User=pi
+EnvironmentFile=/etc/dashcam/dashcam.conf
+ExecStart=/usr/bin/python3 /usr/local/bin/oled-status.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
