@@ -31,7 +31,18 @@ fi
 
 PI_USER=$(whoami)
 RECORD_DIR="/home/$PI_USER/recordings"
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# If run standalone (curl|bash or wget), clone the repo first
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || pwd)"
+if [ ! -d "$SCRIPT_DIR/scripts" ] || [ ! -d "$SCRIPT_DIR/config" ]; then
+    log "Repo not found locally. Cloning..."
+    REPO_DIR="/tmp/dash-car-cam-setup"
+    rm -rf "$REPO_DIR"
+    sudo apt-get install -y -qq git 2>/dev/null || true
+    git clone --depth 1 https://github.com/nineunderground/dash-car-cam.git "$REPO_DIR"
+else
+    REPO_DIR="$SCRIPT_DIR"
+fi
 
 log "Setting up Dash Car Cam for user: $PI_USER"
 log "Repo directory: $REPO_DIR"
