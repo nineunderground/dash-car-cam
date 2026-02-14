@@ -51,10 +51,13 @@ record_usb() {
         -i "$USB_DEVICE" \
         -c:v libx264 \
         -preset ultrafast \
+        -tune zerolatency \
+        -pix_fmt yuv420p \
+        -profile:v baseline \
+        -level 4.0 \
         -b:v "$BITRATE" \
         -t "$SEGMENT_SECONDS" \
-        -f mp4 \
-        -movflags +frag_keyframe+empty_moov+default_base_moof \
+        -movflags +faststart \
         "$outfile" 2>/dev/null
 }
 
