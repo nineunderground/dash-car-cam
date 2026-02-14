@@ -25,7 +25,7 @@ fi
 ARCH=$(uname -m)
 if [[ "$ARCH" != "aarch64" && "$ARCH" != "armv7l" ]]; then
     warn "Unexpected architecture: $ARCH. This script is designed for Raspberry Pi."
-    read -rp "Continue anyway? [y/N] " CONT
+    read -rp "Continue anyway? [y/N] " CONT < /dev/tty
     [[ "$CONT" =~ ^[Yy]$ ]] || exit 1
 fi
 
@@ -127,7 +127,7 @@ if [ ! -f /etc/dashcam/dashcam.conf ]; then
     echo "    1) CSI  — Raspberry Pi Camera (ribbon cable)  (default)"
     echo "    2) USB  — USB webcam (Voxicon, Logitech, etc.)"
     echo ""
-    read -rp "  Camera [1]: " CAM_CHOICE
+    read -rp "  Camera [1]: " CAM_CHOICE < /dev/tty
     CAM_CHOICE="${CAM_CHOICE:-1}"
 
     echo ""
@@ -135,7 +135,7 @@ if [ ! -f /etc/dashcam/dashcam.conf ]; then
     echo "    1) 1080p — higher quality, ~8h on 32GB  (default)"
     echo "    2) 720p  — lighter storage, ~16h on 32GB"
     echo ""
-    read -rp "  Profile [1]: " PROFILE_CHOICE
+    read -rp "  Profile [1]: " PROFILE_CHOICE < /dev/tty
     PROFILE_CHOICE="${PROFILE_CHOICE:-1}"
 
     if [ "$CAM_CHOICE" = "2" ]; then
@@ -168,7 +168,7 @@ log "All profiles available in /etc/dashcam/ for switching later"
 # 5b. Optional: OLED display setup
 # -----------------------------------------------------------
 echo ""
-read -rp "  Install OLED display support (I2C SSD1306)? [y/N] " OLED_CHOICE
+read -rp "  Install OLED display support (I2C SSD1306)? [y/N] " OLED_CHOICE < /dev/tty
 if [[ "$OLED_CHOICE" =~ ^[Yy]$ ]]; then
     log "Installing OLED dependencies..."
     sudo apt-get install -y -qq python3-pip python3-pil i2c-tools
@@ -244,7 +244,7 @@ echo "  Storage for recordings:"
 echo "    1) Same partition as OS (simpler, default)"
 echo "    2) Dedicated partition (recommended — protects OS if disk fills up)"
 echo ""
-read -rp "  Storage [1]: " STORAGE_CHOICE
+read -rp "  Storage [1]: " STORAGE_CHOICE < /dev/tty
 
 if [ "${STORAGE_CHOICE:-1}" = "2" ]; then
     log "Running partition setup..."
