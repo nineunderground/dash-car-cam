@@ -176,6 +176,15 @@ sudo cp "$REPO_DIR/config/$PROFILE_FILE" /etc/dashcam/dashcam.conf
 sudo sed -i "s|/home/pi|/home/$PI_USER|g" /etc/dashcam/dashcam.conf
 log "Config installed: /etc/dashcam/dashcam.conf"
 
+# Fix user in all profile copies and service files
+for prof in /etc/dashcam/dashcam*.conf; do
+    sudo sed -i "s|/home/pi|/home/$PI_USER|g" "$prof"
+done
+for svc in dashcam-record dashcam-stream dashcam-oled dashcam-cleanup; do
+    [ -f "/etc/systemd/system/${svc}.service" ] && sudo sed -i "s/User=pi/User=$PI_USER/" "/etc/systemd/system/${svc}.service"
+done
+sudo systemctl daemon-reload
+
 # Copy all profiles for reference
 for prof in dashcam-1080p.conf dashcam-720p.conf dashcam-usb-1080p.conf dashcam-usb-720p.conf; do
     sudo cp "$REPO_DIR/config/$prof" "/etc/dashcam/$prof"
