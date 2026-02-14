@@ -273,17 +273,33 @@ log "Recordings directory: $RECORD_DIR"
 # 9. Camera test
 # -----------------------------------------------------------
 log "Testing camera..."
-if libcamera-hello --list-cameras 2>&1 | grep -q "Available cameras"; then
-    log "✅ Camera detected!"
-    # Quick test capture
-    libcamera-still --nopreview --timeout 2000 -o "$RECORD_DIR/test_capture.jpg" 2>/dev/null && \
-        log "✅ Test capture saved: $RECORD_DIR/test_capture.jpg" || \
-        warn "Camera detected but test capture failed (may need reboot)"
+if [ "$CAM_CHOICE" = "2" ]; then
+    # USB webcam test
+    if v4l2-ctl --list-devices 2>&1 | grep -q "$USB_DEVICE"; then
+        log "✅ USB camera detected at ${USB_DEVICE:-/dev/video0}"
+        # Quick test capture
+        ffmpeg -y -f v4l2 -input_format mjpeg -video_size 640x480 -framerate 15 -i "${USB_DEVICE:-/dev/video0}" -frames:v 1 "$RECORD_DIR/test_capture.jpg" 2>/dev/null && \
+            log "✅ Test capture saved: $RECORD_DIR/test_capture.jpg" || \
+            warn "Camera detected but test capture failed"
+    else
+        warn "⚠️  No USB camera detected. Check:"
+        warn "   1. Webcam is plugged into a USB port"
+        warn "   2. Run: v4l2-ctl --list-devices"
+        warn "   3. If device is not /dev/video0, update USB_DEVICE in config"
+    fi
 else
-    warn "⚠️  No camera detected. Check:"
-    warn "   1. Ribbon cable is properly connected"
-    warn "   2. Blue side faces USB/Ethernet ports"
-    warn "   3. Reboot after setup completes"
+    # CSI camera test
+    if libcamera-hello --list-cameras 2>&1 | grep -q "Available cameras"; then
+        log "✅ CSI camera detected!"
+        libcamera-still --nopreview --timeout 2000 -o "$RECORD_DIR/test_capture.jpg" 2>/dev/null && \
+            log "✅ Test capture saved: $RECORD_DIR/test_capture.jpg" || \
+            warn "Camera detected but test capture failed (may need reboot)"
+    else
+        warn "⚠️  No CSI camera detected. Check:"
+        warn "   1. Ribbon cable is properly connected"
+        warn "   2. Blue side faces USB/Ethernet ports"
+        warn "   3. Reboot after setup completes"
+    fi
 fi
 
 # -----------------------------------------------------------
