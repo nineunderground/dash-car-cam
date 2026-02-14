@@ -79,20 +79,28 @@ case "${1:-}" in
         ;;
     profile)
         case "${2:-}" in
-            1080p)
-                sudo cp /etc/dashcam/dashcam-1080p.conf /etc/dashcam/dashcam.conf
-                sudo systemctl restart dashcam-record 2>/dev/null || true
-                echo "Switched to 1080p profile (~8h on 32GB). Recording restarted."
-                ;;
-            720p)
-                sudo cp /etc/dashcam/dashcam-720p.conf /etc/dashcam/dashcam.conf
-                sudo systemctl restart dashcam-record 2>/dev/null || true
-                echo "Switched to 720p profile (~16h on 32GB). Recording restarted."
+            1080p|720p|usb-1080p|usb-720p)
+                PROF="/etc/dashcam/dashcam-${2}.conf"
+                if [ -f "$PROF" ]; then
+                    sudo cp "$PROF" /etc/dashcam/dashcam.conf
+                    sudo systemctl restart dashcam-record 2>/dev/null || true
+                    echo "Switched to ${2} profile. Recording restarted."
+                else
+                    echo "Profile not found: $PROF"
+                fi
                 ;;
             *)
-                CURRENT=$(grep "^RESOLUTION=" /etc/dashcam/dashcam.conf 2>/dev/null | cut -d= -f2 | tr -d '"')
-                echo "Current: $CURRENT"
-                echo "Usage: dashcam-ctl profile 1080p|720p"
+                CURRENT_RES=$(grep "^RESOLUTION=" /etc/dashcam/dashcam.conf 2>/dev/null | cut -d= -f2 | tr -d '"')
+                CURRENT_CAM=$(grep "^CAMERA_TYPE=" /etc/dashcam/dashcam.conf 2>/dev/null | cut -d= -f2 | tr -d '"')
+                echo "Current: ${CURRENT_CAM} @ ${CURRENT_RES}"
+                echo ""
+                echo "Available profiles:"
+                echo "  1080p       CSI camera, 1080p (~8h on 32GB)"
+                echo "  720p        CSI camera, 720p  (~16h on 32GB)"
+                echo "  usb-1080p   USB webcam, 1080p (~8h on 32GB)"
+                echo "  usb-720p    USB webcam, 720p  (~16h on 32GB)"
+                echo ""
+                echo "Usage: dashcam-ctl profile <name>"
                 ;;
         esac
         ;;

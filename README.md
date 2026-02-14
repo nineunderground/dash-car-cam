@@ -7,7 +7,8 @@ A Raspberry Pi 4 + NoIR Camera V2 dash cam that auto-records on boot with local 
 | Component | Model |
 |-----------|-------|
 | Board | Raspberry Pi 4 (2GB+ RAM recommended) |
-| Camera | Raspberry Pi NoIR Camera Board V2, 8MP |
+| Camera (option A) | Raspberry Pi NoIR Camera Board V2, 8MP (CSI) |
+| Camera (option B) | USB webcam — e.g. Voxicon 1080p, Logitech C920 (UVC-compliant) |
 | Storage | MicroSD 32GB+ (Class 10 / A2 recommended) |
 | Power | 5V 3A USB-C (car adapter or power bank) |
 | Case | Any Pi 4 case with camera slot (or 3D-printed mount) |
@@ -113,17 +114,31 @@ sudo dashcam-ctl stream on
 ### Switching Profiles
 
 ```bash
-# Switch to 720p (more recording time)
-dashcam-ctl profile 720p
-
-# Switch to 1080p (better quality)
-dashcam-ctl profile 1080p
-
-# Check current profile
-dashcam-ctl profile
+dashcam-ctl profile              # Show current + available profiles
+dashcam-ctl profile 1080p        # CSI camera, 1080p
+dashcam-ctl profile 720p         # CSI camera, 720p
+dashcam-ctl profile usb-1080p    # USB webcam, 1080p
+dashcam-ctl profile usb-720p     # USB webcam, 720p
 ```
 
-Both profiles are stored in `/etc/dashcam/` for easy switching.
+All profiles are stored in `/etc/dashcam/` for easy switching.
+
+### USB Webcam Notes
+
+Any UVC-compliant USB webcam works (Voxicon, Logitech, etc.). Just plug it into a USB port on the Pi.
+
+```bash
+# Verify the webcam is detected
+lsusb
+v4l2-ctl --list-devices
+
+# Check supported formats
+v4l2-ctl -d /dev/video0 --list-formats-ext
+
+# If the device isn't /dev/video0, update USB_DEVICE in the config
+```
+
+USB webcams use `ffmpeg` + V4L2 for capture (software H.264 encoding via `libx264`), vs CSI cameras which use hardware-accelerated `libcamera`. USB works great but uses slightly more CPU.
 
 ## Useful Commands
 
@@ -247,8 +262,10 @@ journalctl -u dashcam-record -f
 │   └── oled-status.py    # Optional OLED display
 ├── config/
 │   ├── dashcam.conf      # Default configuration
-│   ├── dashcam-1080p.conf# 1080p profile
-│   ├── dashcam-720p.conf # 720p profile
+│   ├── dashcam-1080p.conf     # CSI 1080p profile
+│   ├── dashcam-720p.conf      # CSI 720p profile
+│   ├── dashcam-usb-1080p.conf # USB webcam 1080p
+│   ├── dashcam-usb-720p.conf  # USB webcam 720p
 │   ├── dashcam-record.service
 │   ├── dashcam-oled.service
 │   ├── dashcam-stream.service

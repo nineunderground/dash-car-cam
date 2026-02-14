@@ -117,6 +117,14 @@ sudo mkdir -p /etc/dashcam
 # Install config (preserve existing)
 if [ ! -f /etc/dashcam/dashcam.conf ]; then
     echo ""
+    echo "  Select camera type:"
+    echo "    1) CSI  — Raspberry Pi Camera (ribbon cable)  (default)"
+    echo "    2) USB  — USB webcam (Voxicon, Logitech, etc.)"
+    echo ""
+    read -rp "  Camera [1]: " CAM_CHOICE
+    CAM_CHOICE="${CAM_CHOICE:-1}"
+
+    echo ""
     echo "  Select recording profile:"
     echo "    1) 1080p — higher quality, ~8h on 32GB  (default)"
     echo "    2) 720p  — lighter storage, ~16h on 32GB"
@@ -124,9 +132,17 @@ if [ ! -f /etc/dashcam/dashcam.conf ]; then
     read -rp "  Profile [1]: " PROFILE_CHOICE
     PROFILE_CHOICE="${PROFILE_CHOICE:-1}"
 
+    if [ "$CAM_CHOICE" = "2" ]; then
+        CAM_PREFIX="usb-"
+        log "Using USB webcam"
+    else
+        CAM_PREFIX=""
+        log "Using CSI camera"
+    fi
+
     case "$PROFILE_CHOICE" in
-        2) PROFILE_FILE="dashcam-720p.conf"; log "Using 720p profile" ;;
-        *) PROFILE_FILE="dashcam-1080p.conf"; log "Using 1080p profile" ;;
+        2) PROFILE_FILE="dashcam-${CAM_PREFIX}720p.conf"; log "Using 720p profile" ;;
+        *) PROFILE_FILE="dashcam-${CAM_PREFIX}1080p.conf"; log "Using 1080p profile" ;;
     esac
 
     sudo cp "$REPO_DIR/config/$PROFILE_FILE" /etc/dashcam/dashcam.conf
@@ -136,10 +152,11 @@ else
     warn "Config already exists, skipping (edit /etc/dashcam/dashcam.conf manually)"
 fi
 
-# Copy both profiles for reference
-sudo cp "$REPO_DIR/config/dashcam-1080p.conf" /etc/dashcam/dashcam-1080p.conf
-sudo cp "$REPO_DIR/config/dashcam-720p.conf" /etc/dashcam/dashcam-720p.conf
-log "Both profiles available in /etc/dashcam/ for switching later"
+# Copy all profiles for reference
+for prof in dashcam-1080p.conf dashcam-720p.conf dashcam-usb-1080p.conf dashcam-usb-720p.conf; do
+    sudo cp "$REPO_DIR/config/$prof" "/etc/dashcam/$prof"
+done
+log "All profiles available in /etc/dashcam/ for switching later"
 
 # -----------------------------------------------------------
 # 5b. Optional: OLED display setup
