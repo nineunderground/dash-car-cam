@@ -126,21 +126,38 @@ log "Installing configuration..."
 sudo mkdir -p /etc/dashcam
 
 # Select camera + profile (always prompt, even on re-run)
-echo ""
-echo "  Select camera type:"
-echo "    1) CSI  — Raspberry Pi Camera (ribbon cable)  (default)"
-echo "    2) USB  — USB webcam (Voxicon, Logitech, etc.)"
-echo ""
-read -rp "  Camera [1]: " CAM_CHOICE < /dev/tty
-CAM_CHOICE="${CAM_CHOICE:-1}"
+# Override with env vars: DASHCAM_CAMERA=usb DASHCAM_PROFILE=720p bash setup.sh
+if [ -n "${DASHCAM_CAMERA:-}" ]; then
+    case "$DASHCAM_CAMERA" in
+        usb) CAM_CHOICE="2" ;;
+        *)   CAM_CHOICE="1" ;;
+    esac
+    log "Camera from env: $DASHCAM_CAMERA"
+else
+    echo ""
+    echo "  Select camera type:"
+    echo "    1) CSI  — Raspberry Pi Camera (ribbon cable)  (default)"
+    echo "    2) USB  — USB webcam (Voxicon, Logitech, etc.)"
+    echo ""
+    read -rp "  Camera [1]: " CAM_CHOICE < /dev/tty || CAM_CHOICE="1"
+    CAM_CHOICE="${CAM_CHOICE:-1}"
+fi
 
-echo ""
-echo "  Select recording profile:"
-echo "    1) 1080p — higher quality, ~8h on 32GB  (default)"
-echo "    2) 720p  — lighter storage, ~16h on 32GB"
-echo ""
-read -rp "  Profile [1]: " PROFILE_CHOICE < /dev/tty
-PROFILE_CHOICE="${PROFILE_CHOICE:-1}"
+if [ -n "${DASHCAM_PROFILE:-}" ]; then
+    case "$DASHCAM_PROFILE" in
+        720p) PROFILE_CHOICE="2" ;;
+        *)    PROFILE_CHOICE="1" ;;
+    esac
+    log "Profile from env: $DASHCAM_PROFILE"
+else
+    echo ""
+    echo "  Select recording profile:"
+    echo "    1) 1080p — higher quality, ~8h on 32GB  (default)"
+    echo "    2) 720p  — lighter storage, ~16h on 32GB"
+    echo ""
+    read -rp "  Profile [1]: " PROFILE_CHOICE < /dev/tty || PROFILE_CHOICE="1"
+    PROFILE_CHOICE="${PROFILE_CHOICE:-1}"
+fi
 
 if [ "$CAM_CHOICE" = "2" ]; then
     CAM_PREFIX="usb-"
