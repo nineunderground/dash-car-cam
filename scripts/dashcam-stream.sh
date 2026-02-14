@@ -13,18 +13,16 @@ fi
 CAMERA_TYPE="${CAMERA_TYPE:-csi}"
 USB_DEVICE="${USB_DEVICE:-/dev/video0}"
 MEDIAMTX_BIN="/usr/local/bin/mediamtx"
-MEDIAMTX_CONF="/etc/dashcam/mediamtx.yml"
+MEDIAMTX_CONF="/tmp/dashcam-mediamtx.yml"
 
-# Generate mediamtx config if not present
-if [ ! -f "$MEDIAMTX_CONF" ]; then
-    cat > "$MEDIAMTX_CONF" <<EOF
+# Always regenerate mediamtx config (no root permissions needed)
+cat > "$MEDIAMTX_CONF" <<EOF
 rtspAddress: :${RTSP_PORT}
 paths:
   dashcam:
     source: publisher
     sourceOnDemand: no
 EOF
-fi
 
 echo "[dashcam-stream] Starting RTSP server on port $RTSP_PORT"
 echo "[dashcam-stream] Camera: $CAMERA_TYPE"
