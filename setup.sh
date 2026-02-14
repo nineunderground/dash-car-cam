@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
 # Dash Car Cam - One-Shot Setup Script
+# Wrapped in main() so curl|bash reads the entire script before executing.
+# ============================================================
+
+main() {
+# ============================================================
 # Raspberry Pi 4 + NoIR Camera V2
 # ============================================================
 set -euo pipefail
@@ -291,3 +296,7 @@ echo "  To stream:     dashcam-ctl stream on"
 echo ""
 echo -e "${YELLOW}  Reboot recommended: sudo reboot${NC}"
 echo ""
+
+}
+
+main "$@"
