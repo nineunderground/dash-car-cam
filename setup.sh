@@ -275,7 +275,8 @@ log "Recordings directory: $RECORD_DIR"
 log "Testing camera..."
 if [ "$CAM_CHOICE" = "2" ]; then
     # USB webcam test
-    if v4l2-ctl --list-devices 2>&1 | grep -q "$USB_DEVICE"; then
+    USB_DEVICE="Camera"
+    if v4l2-ctl --list-devices 2>&1 | grep "$USB_DEVICE"; then
         log "✅ USB camera detected at ${USB_DEVICE:-/dev/video0}"
         # Quick test capture
         ffmpeg -y -f v4l2 -input_format mjpeg -video_size 640x480 -framerate 15 -i "${USB_DEVICE:-/dev/video0}" -frames:v 1 "$RECORD_DIR/test_capture.jpg" 2>/dev/null && \
