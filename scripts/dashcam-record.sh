@@ -35,10 +35,26 @@ record_csi() {
     ffmpeg -y \
         -i - \
         -c:v copy \
-        -f mp4 \
-        -movflags +frag_keyframe+empty_moov+default_base_moof \
-        "$outfile" 2>/dev/null
+        -movflags +faststart \
+        "$outfile" 2>/dev/null &
+    FFMPEG_PID=$!
+    wait "$FFMPEG_PID"
+    FFMPEG_PID=""
 }
+
+FFMPEG_PID=""
+
+# Trap SIGTERM/SIGINT: send 'q' to ffmpeg so it finalizes the MP4 cleanly
+cleanup() {
+    if [ -n "$FFMPEG_PID" ] && kill -0 "$FFMPEG_PID" 2>/dev/null; then
+        echo "[dashcam] Stopping recording gracefully..."
+        kill -INT "$FFMPEG_PID" 2>/dev/null
+        wait "$FFMPEG_PID" 2>/dev/null
+        echo "[dashcam] Recording stopped cleanly."
+    fi
+    exit 0
+}
+trap cleanup SIGTERM SIGINT
 
 record_usb() {
     local outfile="$1"
@@ -57,9 +73,11 @@ record_usb() {
         -level 4.0 \
         -b:v "$BITRATE" \
         -t "$SEGMENT_SECONDS" \
-        -f mp4 \
-        -movflags +frag_keyframe+empty_moov+default_base_moof \
-        "$outfile" 2>/dev/null
+        -movflags +faststart \
+        "$outfile" 2>/dev/null &
+    FFMPEG_PID=$!
+    wait "$FFMPEG_PID"
+    FFMPEG_PID=""
 }
 
 while true; do
