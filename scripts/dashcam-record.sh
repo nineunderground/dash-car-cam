@@ -46,12 +46,12 @@ FFMPEG_PID=""
 
 # Trap SIGTERM/SIGINT: send 'q' to ffmpeg so it finalizes the MP4 cleanly
 cleanup() {
+    echo "[dashcam] Stopping recording gracefully..."
     if [ -n "$FFMPEG_PID" ] && kill -0 "$FFMPEG_PID" 2>/dev/null; then
-        echo "[dashcam] Stopping recording gracefully..."
         kill -INT "$FFMPEG_PID" 2>/dev/null
-        wait "$FFMPEG_PID" 2>/dev/null
-        echo "[dashcam] Recording stopped cleanly."
+        wait "$FFMPEG_PID" 2>/dev/null || true
     fi
+    echo "[dashcam] Recording stopped cleanly."
     exit 0
 }
 trap cleanup SIGTERM SIGINT

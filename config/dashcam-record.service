@@ -9,6 +9,7 @@ User=pi
 EnvironmentFile=/etc/dashcam/dashcam.conf
 ExecStart=/usr/local/bin/dashcam-record.sh
 KillSignal=SIGINT
+SuccessExitStatus=0 130 SIGINT
 TimeoutStopSec=15
 Restart=always
 RestartSec=5
