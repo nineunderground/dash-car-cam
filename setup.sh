@@ -242,23 +242,9 @@ fi
 log "Services installed"
 
 # -----------------------------------------------------------
-# 8. Recordings storage
+# 8. Recordings directory
 # -----------------------------------------------------------
-echo ""
-echo "  Storage for recordings:"
-echo "    1) Same partition as OS (simpler, default)"
-echo "    2) Dedicated partition (recommended — protects OS if disk fills up)"
-echo ""
-read -rp "  Storage [1]: " STORAGE_CHOICE < /dev/tty
-
-if [ "${STORAGE_CHOICE:-1}" = "2" ]; then
-    log "Running partition setup..."
-    sudo bash "$REPO_DIR/scripts/partition-setup.sh"
-    # Reload config (partition script updates RECORD_DIR)
-    source /etc/dashcam/dashcam.conf
-else
-    mkdir -p "$RECORD_DIR"
-fi
+mkdir -p "$RECORD_DIR"
 log "Recordings directory: $RECORD_DIR"
 
 # -----------------------------------------------------------
