@@ -23,12 +23,12 @@ usage() {
 case "${1:-}" in
     status)
         echo "=== Dash Car Cam Status ==="
-        echo -n "Recording: "
-        systemctl is-active dashcam-record 2>/dev/null || echo "inactive"
-        echo -n "Streaming: "
-        systemctl is-active dashcam-stream 2>/dev/null || echo "inactive"
-        echo -n "OLED:      "
-        systemctl is-active dashcam-oled 2>/dev/null || echo "inactive"
+        REC_STATUS=$(systemctl is-active dashcam-record 2>/dev/null || true)
+        STREAM_STATUS=$(systemctl is-active dashcam-stream 2>/dev/null || true)
+        OLED_STATUS=$(systemctl is-active dashcam-oled 2>/dev/null || true)
+        echo "Recording: ${REC_STATUS:-inactive}"
+        echo "Streaming: ${STREAM_STATUS:-inactive}"
+        echo "OLED:      ${OLED_STATUS:-inactive}"
         echo ""
         echo "Recordings: $(find "$RECORD_DIR" -name '*.mp4' 2>/dev/null | wc -l) files"
         echo "Disk: $(df -h "$RECORD_DIR" | tail -1 | awk '{print $5 " used (" $4 " free)"}')"
@@ -115,8 +115,7 @@ case "${1:-}" in
                 echo "OLED display disabled"
                 ;;
             *)
-                echo -n "OLED: "
-                systemctl is-active dashcam-oled 2>/dev/null || echo "inactive"
+                echo "OLED: $(systemctl is-active dashcam-oled 2>/dev/null || echo inactive)"
                 echo "Usage: dashcam-ctl oled on|off"
                 ;;
         esac
