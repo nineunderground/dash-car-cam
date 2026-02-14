@@ -66,6 +66,9 @@ case "$CAMERA_TYPE" in
             -c:v libx264 \
             -preset ultrafast \
             -tune zerolatency \
+            -pix_fmt yuv420p \
+            -profile:v baseline \
+            -level 4.0 \
             -b:v "$STREAM_BITRATE" \
             -f rtsp \
             "$RTSP_URL" 2>/dev/null
