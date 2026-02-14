@@ -152,6 +152,31 @@ dashcam-ctl tail            # Follow the dashcam log
 dashcam-ctl ip              # Show Pi's IP (for RTSP URL)
 ```
 
+## Storage Partition (recommended)
+
+By default, recordings go on the same partition as the OS. If recordings fill the disk, you lose SSH access and the OS can become unstable.
+
+The setup script offers to create a **dedicated partition** for recordings:
+
+```
+/dev/mmcblk0p1  → /boot      (256MB)
+/dev/mmcblk0p2  → /          (OS, ~8GB)
+/dev/mmcblk0p3  → /mnt/dashcam  (rest of SD card, recordings only)
+```
+
+Benefits:
+- **OS stays healthy** even if recordings hit 100%
+- SSH always works for remote access
+- Cleanup script only manages the recordings partition
+- `nofail` fstab flag = OS boots even if partition is damaged
+
+To set up after initial install:
+```bash
+sudo bash /usr/local/bin/partition-setup.sh
+```
+
+> **Tip:** When flashing the SD card with Raspberry Pi Imager, disable "Expand filesystem" in advanced settings. This leaves free space for the recordings partition. If the rootfs already fills the card, you'll need to re-flash or use a USB drive instead.
+
 ## Accessing Recordings
 
 ### Over the network (SCP)
@@ -258,6 +283,7 @@ journalctl -u dashcam-record -f
 │   ├── dashcam-stream.sh # RTSP streaming
 │   ├── dashcam-ctl.sh    # Control utility
 │   ├── storage-cleanup.sh# Auto-purge old files
+│   ├── partition-setup.sh # Dedicated recordings partition
 │   ├── led-status.sh     # Optional LED control
 │   └── oled-status.py    # Optional OLED display
 ├── config/
