@@ -57,7 +57,8 @@ record_usb() {
         -level 4.0 \
         -b:v "$BITRATE" \
         -t "$SEGMENT_SECONDS" \
-        -movflags +faststart \
+        -f mp4 \
+        -movflags +frag_keyframe+empty_moov+default_base_moof \
         "$outfile" 2>/dev/null
 }
 
