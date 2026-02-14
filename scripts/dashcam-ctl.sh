@@ -36,7 +36,12 @@ case "${1:-}" in
     record)
         case "${2:-}" in
             on)  sudo systemctl enable --now dashcam-record; echo "Recording started" ;;
-            off) sudo systemctl disable --now dashcam-record; echo "Recording stopped" ;;
+            off)
+                sudo systemctl stop dashcam-record
+                sudo systemctl disable dashcam-record
+                sudo systemctl reset-failed dashcam-record 2>/dev/null || true
+                echo "Recording stopped"
+                ;;
             *)   echo "Usage: dashcam-ctl record on|off" ;;
         esac
         ;;
@@ -48,7 +53,9 @@ case "${1:-}" in
                 echo "Streaming started: rtsp://$(hostname -I | awk '{print $1}'):${RTSP_PORT:-8554}/dashcam"
                 ;;
             off)
-                sudo systemctl disable --now dashcam-stream
+                sudo systemctl stop dashcam-stream
+                sudo systemctl disable dashcam-stream
+                sudo systemctl reset-failed dashcam-stream 2>/dev/null || true
                 sudo sed -i 's/STREAM_ENABLED=true/STREAM_ENABLED=false/' /etc/dashcam/dashcam.conf
                 echo "Streaming stopped"
                 ;;
