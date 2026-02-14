@@ -39,6 +39,7 @@ case "${1:-}" in
             off)
                 sudo systemctl stop dashcam-record
                 sudo systemctl disable dashcam-record
+                sleep 1
                 sudo systemctl reset-failed dashcam-record 2>/dev/null || true
                 echo "Recording stopped"
                 ;;
