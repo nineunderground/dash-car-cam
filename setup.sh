@@ -167,13 +167,15 @@ log "All profiles available in /etc/dashcam/ for switching later"
 # -----------------------------------------------------------
 # 5b. Optional: OLED display setup
 # -----------------------------------------------------------
+OLED_INSTALLED=false
 echo ""
-read -rp "  Install OLED display support (I2C SSD1306)? [y/N] " OLED_CHOICE < /dev/tty
-if [[ "$OLED_CHOICE" =~ ^[Yy]$ ]]; then
+OLED_CHOICE="n"
+read -rp "  Install OLED display support (I2C SSD1306)? [y/N] " OLED_CHOICE < /dev/tty || OLED_CHOICE="n"
+
+if [ "$OLED_CHOICE" = "y" ] || [ "$OLED_CHOICE" = "Y" ]; then
     log "Installing OLED dependencies..."
     sudo apt-get install -y -qq python3-pip python3-pil i2c-tools
-    pip3 install --break-system-packages adafruit-circuitpython-ssd1306 2>/dev/null || \
-        pip3 install adafruit-circuitpython-ssd1306
+    pip3 install --break-system-packages adafruit-circuitpython-ssd1306 2>/dev/null || pip3 install adafruit-circuitpython-ssd1306 || true
 
     # Enable I2C
     if ! grep -q "^dtparam=i2c_arm=on" "$BOOT_CONFIG" 2>/dev/null; then
@@ -186,8 +188,6 @@ if [[ "$OLED_CHOICE" =~ ^[Yy]$ ]]; then
 
     OLED_INSTALLED=true
     log "OLED display support installed"
-else
-    OLED_INSTALLED=false
 fi
 
 # -----------------------------------------------------------
